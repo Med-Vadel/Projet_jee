@@ -1,11 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, com.example.Employee" %>
+<%@ page import="java.util.List, com.example.Manager" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion Employé</title>
+    <title>Connexion Manager</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
@@ -31,32 +31,32 @@
 
     <div class="login-container">
         <div class="login-box">
-            <h4 class="text-center"><i class="fas fa-user-shield"></i> Connexion Employé</h4>
+            <h4 class="text-center"><i class="fas fa-user-tie"></i> Connexion Manager</h4>
             
 
             <%
                 String email = request.getParameter("username");
                 String password = request.getParameter("password");
-                List<Employee> employees = (List<Employee>) session.getAttribute("employees");
+                List<Manager> managers = (List<Manager>) session.getAttribute("managers");
 
                 if (request.getMethod().equalsIgnoreCase("POST")) {
                     if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
                         boolean isValid = false;
-                        Employee loggedInEmp = null;
+                        Manager loggedInManager = null;
                         
-                        if(employees != null) {
-                            for(Employee emp : employees) {
-                                if(emp.getEmail().equals(email) && emp.getPassword().equals(password)) {
+                        if(managers != null) {
+                            for(Manager mgr : managers) {
+                                if(mgr.getManagerEmail().equals(email) && mgr.getManagerPassword().equals(password)) {
                                     isValid = true;
-                                    loggedInEmp = emp;
+                                    loggedInManager = mgr;
                                     break;
                                 }
                             }
                         }
                         
                         if (isValid) {
-                            session.setAttribute("currentEmployee", loggedInEmp); // حفظ بيانات الموظف في الجلسة
-                            response.sendRedirect("Pages/employeeDashboard.jsp");
+                            session.setAttribute("currentManager", loggedInManager); // حفظ بيانات المدير في الجلسة
+                            response.sendRedirect("Pages/managerDashboard.jsp");
                             return;
                         } else {
             %>
@@ -70,7 +70,7 @@
                     }
                 }
             %>
-            <form method="POST" action="login.jsp" name="signin">
+            <form method="POST" action="managerLogin.jsp" name="signin">
                 <div class="mb-3">
                     <label for="username" class="form-label">Adresse email</label>
                     <div class="input-group">
@@ -92,15 +92,14 @@
                 <button type="submit" class="btn btn-primary w-100">
                     Se connecter <i class="fa-solid fa-arrow-right"></i>
                 </button>
+                <div class="text-center mt-3">
+                <a href="login.jsp" class="text-muted">Espace employé</a>
+            </div>  
 
                 <div class="text-center mt-3">
                     <a href="AdminLogin.jsp" class="text-muted">Espace administrateur</a>
                 </div>
-                <div class="text-center mt-3">
-                <a href="managerLogin.jsp" class="text-muted">zone de gestion des départements</a>
-            </div>  
             </form>
-            
         </div>
     </div>
 

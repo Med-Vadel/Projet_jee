@@ -17,7 +17,7 @@
         <i class="fa-solid fa-shield-halved text-primary me-2"></i>
         Panneau de connexion administrateur
         </h4>
-        <p class="text-center">Système de gestion des congés des employés</p>
+        
 
         <%
             String adminUsername = request.getParameter("adminUsername");
@@ -57,19 +57,16 @@
                 </div>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="rememberMeAdmin">
-                    <label class="form-check-label" for="rememberMeAdmin">Se souvenir de moi</label>
-                </div>
-                <a href="password-recovery.jsp" class="text-decoration-none">Mot de passe oublié ?</a>
-            </div>
+            
 
             <button type="submit" class="btn btn-primary w-100">Se connecter <i class="fa-solid fa-arrow-right"></i></button>
 
             <div class="text-center mt-3">
-                <a href="login.jsp" class="text-muted">Retour à la page d'accueil</a>
+                <a href="login.jsp" class="text-muted">Espace employé</a>
             </div>    
+            <div class="text-center mt-3">
+                <a href="managerLogin.jsp" class="text-muted">zone de gestion des départements</a>
+            </div>  
         </form>
     </div>
 </div>

@@ -94,10 +94,10 @@
             <div class="row g-3">
               <!-- Colonne gauche -->
               <div class="col-md-6">
-                <label class="form-label required">Numéro employé</label>
+                <label class="form-label required">Numéro de sécurité sociale  </label>
                 <input type="text" class="form-control" name="empcode" required value="${param.empcode}">
-                <label class="form-label required mt-3">Prénom</label>
-                <input type="text" class="form-control" name="firstName" required value="${param.firstName}">
+                <label class="form-label required">Prénom</label>
+                <input type="text" class="form-control" name="lastName" required value="${param.lastName}">
                 <label class="form-label required mt-3">Département</label>
                 <select class="form-select" name="department" required>
                   <option value="">Sélectionnez un département</option>
@@ -131,8 +131,8 @@
               </div>
               <!-- Colonne droite -->
               <div class="col-md-6">
-                <label class="form-label required">Nom</label>
-                <input type="text" class="form-control" name="lastName" required value="${param.lastName}">
+              <label class="form-label required mt-3">Nom</label>
+                <input type="text" class="form-control" name="firstName" required value="${param.firstName}">
                 <label class="form-label required mt-3">Téléphone</label>
                 <input type="tel" class="form-control" name="mobileno" pattern="[234]\d{7}" title="Doit commencer par 2/3/4 et avoir 8 chiffres" required value="${param.mobileno}">
                 <label class="form-label required mt-3">Genre</label>
@@ -186,7 +186,7 @@
               <table class="table table-hover table-bordered">
                 <thead class="table-dark">
                   <tr>
-                    <th>#</th>
+                    <th>Numéro de sécurité sociale </th>
                     <th>Nom complet</th>
                     <th>Rôle</th>
                     <th>Département</th>
@@ -268,11 +268,11 @@
                 <input type="text" class="form-control" name="managerCode" required value="${param.managerCode}">
               </div>
               <div class="col-md-4">
-                <label class="form-label required">Prénom</label>
+                <label class="form-label required">Nom</label>
                 <input type="text" class="form-control" name="managerFirstName" required value="${param.managerFirstName}">
               </div>
               <div class="col-md-4">
-                <label class="form-label required">Nom</label>
+                <label class="form-label required">Prénom</label>
                 <input type="text" class="form-control" name="managerLastName" required value="${param.managerLastName}">
               </div>
               <div class="col-md-6">
@@ -309,7 +309,9 @@
               </div>
             </div>
           </form>
-          <div class="mt-5">
+          
+        </div>
+        <div class="mt-5">
             <h3 class="mb-4"><i class="fas fa-user-tie"></i> Liste des managers</h3>
             <% List<Manager> managers = (List<Manager>) session.getAttribute("managers"); %>
             <% if (managers != null && !managers.isEmpty()) { %>
@@ -363,9 +365,10 @@
               </div>
             <% } %>
           </div>
-        </div>
       </div>
+      
     </div>
+    
   </div>
 
   <!-- Modal d'édition pour les employés -->
@@ -382,15 +385,15 @@
             <input type="hidden" name="originalEmpcode" id="originalEmpcode">
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label">Numéro employé</label>
+                <label class="form-label">Numéro de sécurité sociale </label>
                 <input type="text" class="form-control" name="empcode" id="editEmpcode" required>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Prénom</label>
+                <label class="form-label">Nom</label>
                 <input type="text" class="form-control" name="firstName" id="editFirstName" required>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Nom</label>
+                <label class="form-label">Prénom</label>
                 <input type="text" class="form-control" name="lastName" id="editLastName" required>
               </div>
               <div class="col-md-6">
@@ -491,11 +494,11 @@
                 <input type="text" class="form-control" name="managerCode" id="editManagerCode" required>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Prénom</label>
+                <label class="form-label">Nom</label>
                 <input type="text" class="form-control" name="managerFirstName" id="editManagerFirstName" required>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Nom</label>
+                <label class="form-label">Prénom</label>
                 <input type="text" class="form-control" name="managerLastName" id="editManagerLastName" required>
               </div>
               <div class="col-md-6">
