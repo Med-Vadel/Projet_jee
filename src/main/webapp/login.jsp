@@ -34,28 +34,30 @@
             <h4 class="text-center"><i class="fas fa-user-shield"></i> Connexion Employé</h4>
             <p class="text-center">Système de gestion des congés</p>
 
-            <%  
+            <%
                 String email = request.getParameter("username");
                 String password = request.getParameter("password");
                 List<Employee> employees = (List<Employee>) session.getAttribute("employees");
 
                 if (request.getMethod().equalsIgnoreCase("POST")) {
                     if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
-                        
                         boolean isValid = false;
+                        Employee loggedInEmp = null;
+                        
                         if(employees != null) {
                             for(Employee emp : employees) {
                                 if(emp.getEmail().equals(email) && emp.getPassword().equals(password)) {
                                     isValid = true;
+                                    loggedInEmp = emp;
                                     break;
                                 }
                             }
                         }
                         
                         if (isValid) {
-            %>
-                            <div class="alert alert-success text-center">Connexion réussie !</div>
-            <%
+                            session.setAttribute("currentEmployee", loggedInEmp); // حفظ بيانات الموظف في الجلسة
+                            response.sendRedirect("Pages/employeeDashboard.jsp");
+                            return;
                         } else {
             %>
                             <div class="alert alert-danger text-center">Email ou mot de passe incorrect</div>
@@ -68,7 +70,6 @@
                     }
                 }
             %>
-
             <form method="POST" action="login.jsp" name="signin">
                 <div class="mb-3">
                     <label for="username" class="form-label">Adresse email</label>
@@ -94,7 +95,9 @@
                     <a href="password-recovery.jsp" class="text-decoration-none">Mot de passe oublié ?</a>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100">Se connecter <i class="fa-solid fa-arrow-right"></i></button>
+                <button type="submit" class="btn btn-primary w-100">
+                    Se connecter <i class="fa-solid fa-arrow-right"></i>
+                </button>
 
                 <div class="text-center mt-3">
                     <a href="AdminLogin.jsp" class="text-muted">Espace administrateur</a>

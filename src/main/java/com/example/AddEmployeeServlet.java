@@ -10,99 +10,72 @@ import java.util.List;
 @WebServlet("/AddEmployeeServlet")
 public class AddEmployeeServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private static final String DEFAULT_RETURN_PAGE = "/Pages/add-employee.jsp";
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession();
         String action = request.getParameter("action");
-        
-        // معالجة الحذف
-        if ("delete".equals(action)) {
-            handleDelete(request, session);
-            redirect(response, request);
-            return;
-        }
-        
-        List<Employee> employees = (List<Employee>) session.getAttribute("employees");
-        if (employees == null) {
-            employees = new ArrayList<>();
+
+        List<Employee> employees = initializeEmployees(session);
+
+        try {
+            processRequest(action, request, employees);
+            session.setAttribute("employees", employees);
+        } catch (ValidationException e) {
+            request.setAttribute("error", e.getMessage());
         }
 
-        // معالجة الإضافة
-        if ("add".equals(action)) {
-            handleAdd(request, response, employees, session);
-            return;
-        }
-        
-        // معالجة التعديل
-        if ("edit".equals(action)) {
-            handleEdit(request, response, employees, session);
-            return;
+        forwardToSourcePage(request, response);
+    }
+
+    private List<Employee> initializeEmployees(HttpSession session) {
+        @SuppressWarnings("unchecked")
+        List<Employee> employees = (List<Employee>) session.getAttribute("employees");
+        return employees != null ? employees : new ArrayList<>();
+    }
+
+    private void processRequest(String action, HttpServletRequest request, List<Employee> employees)
+            throws ValidationException {
+        switch (action) {
+            case "delete":
+                handleDelete(request, employees);
+                break;
+            case "add":
+                handleAdd(request, employees);
+                break;
+            case "edit":
+                handleEdit(request, employees);
+                break;
+            default:
+                throw new ValidationException("Action non valide");
         }
     }
 
-    private void handleAdd(HttpServletRequest request, HttpServletResponse response, 
-                          List<Employee> employees, HttpSession session)
-            throws ServletException, IOException {
-        
-        String password = request.getParameter("password");
-        String confirmPassword = request.getParameter("confirmpassword");
-        
-        if (!password.equals(confirmPassword)) {
-            setErrorAndForward(request, response, "كلمة المرور غير متطابقة!");
-            return;
-        }
-        
+    private void handleAdd(HttpServletRequest request, List<Employee> employees) throws ValidationException {
+        validatePasswordMatch(request);
+
         Employee emp = createEmployee(request);
-        
-        if (isEmployeeExists(employees, emp)) {
-            setErrorAndForward(request, response, "الموظف مسجل مسبقاً!");
-            return;
-        }
+        validateEmployeeUniqueness(employees, emp);
 
         employees.add(emp);
-        session.setAttribute("employees", employees);
-        setMessageAndRedirect(request, response, "تم الإضافة بنجاح!");
+        request.setAttribute("msg", "Employé ajouté avec succès!");
     }
 
-    private void handleEdit(HttpServletRequest request, HttpServletResponse response,
-                           List<Employee> employees, HttpSession session)
-            throws ServletException, IOException {
-        
-        String originalEmpcode = request.getParameter("originalEmpcode");
-        String newPassword = request.getParameter("newPassword");
-        String confirmNewPassword = request.getParameter("confirmNewPassword");
-        
-        // التحقق من كلمة المرور الجديدة
-        if (newPassword != null && !newPassword.isEmpty() && !newPassword.equals(confirmNewPassword)) {
-            setErrorAndForward(request, response, "كلمة المرور الجديدة غير متطابقة!");
-            return;
-        }
-        
-        Employee existingEmp = employees.stream()
-                .filter(e -> e.getEmpcode().equals(originalEmpcode))
-                .findFirst()
-                .orElse(null);
-        
-        if (existingEmp == null) {
-            setErrorAndForward(request, response, "الموظف غير موجود!");
-            return;
-        }
-        
-        // التحقق من التكرار بعد التعديل
-        Employee updatedEmp = createEmployee(request);
-        if (isDuplicateAfterEdit(employees, originalEmpcode, updatedEmp)) {
-            setErrorAndForward(request, response, "بيانات جديدة مكررة!");
-            return;
-        }
-        
-        // التحديث
-        updateEmployee(existingEmp, updatedEmp, newPassword);
-        setMessageAndRedirect(request, response, "تم التحديث بنجاح!");
+    private void handleEdit(HttpServletRequest request, List<Employee> employees) throws ValidationException {
+        String originalCode = request.getParameter("originalEmpcode");
+        Employee existing = findEmployee(employees, originalCode);
+
+        Employee updated = createEmployee(request);
+        validateUpdateUniqueness(originalCode, employees, updated);
+
+        updatePartialFields(existing, updated);
+        request.setAttribute("msg", "Mise à jour réussie!");
     }
 
-    private void updateEmployee(Employee existing, Employee updated, String newPassword) {
+    // هنا قمنا بتحديث كل الحقول لتحديث شامل
+    private void updatePartialFields(Employee existing, Employee updated) {
         existing.setEmpcode(updated.getEmpcode());
         existing.setFirstName(updated.getFirstName());
         existing.setLastName(updated.getLastName());
@@ -113,28 +86,23 @@ public class AddEmployeeServlet extends HttpServlet {
         existing.setDob(updated.getDob());
         existing.setMobileno(updated.getMobileno());
         existing.setCountry(updated.getCountry());
-        existing.setAddress(updated.getAddress());
         existing.setCity(updated.getCity());
-        
-        if (newPassword != null && !newPassword.isEmpty()) {
-            existing.setPassword(newPassword);
-        }
+        existing.setAddress(updated.getAddress());
+        existing.setPassword(updated.getPassword());
     }
 
-    private boolean isDuplicateAfterEdit(List<Employee> employees, String originalCode, Employee updated) {
-        return employees.stream()
-                .filter(e -> !e.getEmpcode().equals(originalCode))
-                .anyMatch(e -> 
-                    e.getEmpcode().equals(updated.getEmpcode()) || 
-                    e.getEmail().equals(updated.getEmail()));
+    private void handleDelete(HttpServletRequest request, List<Employee> employees) {
+        String code = request.getParameter("empcode");
+        employees.removeIf(e -> e.getEmpcode().equals(code));
     }
 
-    private void handleDelete(HttpServletRequest request, HttpSession session) {
-        String empcode = request.getParameter("empcode");
-        List<Employee> employees = (List<Employee>) session.getAttribute("employees");
-        
-        if (employees != null) {
-            employees.removeIf(e -> e.getEmpcode().equals(empcode));
+    // Helper methods
+    private void validatePasswordMatch(HttpServletRequest request) throws ValidationException {
+        String password = request.getParameter("password");
+        String confirm = request.getParameter("confirmpassword");
+
+        if (!password.equals(confirm)) {
+            throw new ValidationException("Les mots de passe ne correspondent pas!");
         }
     }
 
@@ -156,26 +124,50 @@ public class AddEmployeeServlet extends HttpServlet {
         return emp;
     }
 
-    private boolean isEmployeeExists(List<Employee> employees, Employee newEmp) {
-        return employees.stream().anyMatch(e -> 
-            e.getEmpcode().equals(newEmp.getEmpcode()) || 
-            e.getEmail().equals(newEmp.getEmail()));
+    private void validateEmployeeUniqueness(List<Employee> employees, Employee newEmp) throws ValidationException {
+        boolean exists = employees.stream()
+                .anyMatch(e -> e.getEmpcode().equals(newEmp.getEmpcode()) || e.getEmail().equals(newEmp.getEmail()));
+
+        if (exists) {
+            throw new ValidationException("Employé existe déjà!");
+        }
     }
 
-    private void setErrorAndForward(HttpServletRequest request, HttpServletResponse response, String error)
+    private Employee findEmployee(List<Employee> employees, String code) throws ValidationException {
+        return employees.stream()
+                .filter(e -> e.getEmpcode().equals(code))
+                .findFirst()
+                .orElseThrow(() -> new ValidationException("Employé introuvable!"));
+    }
+
+    private void validateUpdateUniqueness(String originalCode, List<Employee> employees, Employee updated)
+            throws ValidationException {
+        boolean duplicate = employees.stream()
+                .filter(e -> !e.getEmpcode().equals(originalCode))
+                .anyMatch(e -> e.getEmpcode().equals(updated.getEmpcode()) || e.getEmail().equals(updated.getEmail()));
+
+        if (duplicate) {
+            throw new ValidationException("Données dupliquées!");
+        }
+    }
+
+    private void forwardToSourcePage(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setAttribute("error", error);
-        request.getRequestDispatcher("/Pages/add-employee.jsp").forward(request, response);
+        String referer = request.getHeader("referer");
+        String returnPage = DEFAULT_RETURN_PAGE;
+
+        if (referer != null) {
+            String contextPath = request.getContextPath();
+            returnPage = referer.substring(referer.indexOf(contextPath) + contextPath.length());
+        }
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher(returnPage);
+        dispatcher.forward(request, response);
     }
 
-    private void setMessageAndRedirect(HttpServletRequest request, HttpServletResponse response, String msg)
-            throws IOException {
-        request.getSession().setAttribute("msg", msg);
-        response.sendRedirect(request.getContextPath() + "/Pages/add-employee.jsp");
-    }
-
-    private void redirect(HttpServletResponse response, HttpServletRequest request)
-            throws IOException {
-        response.sendRedirect(request.getContextPath() + "/Pages/add-employee.jsp");
+    private static class ValidationException extends Exception {
+        public ValidationException(String message) {
+            super(message);
+        }
     }
 }
