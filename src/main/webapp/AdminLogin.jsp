@@ -14,18 +14,20 @@
 <div class="login-container">
     <div class="login-box">
         <h4 class="text-center">
-        <i class="fa-solid fa-shield-halved text-primary me-2"></i>
-        Panneau de connexion administrateur
+            <i class="fa-solid fa-shield-halved text-primary me-2"></i>
+            Panneau de connexion administrateur
         </h4>
         
-
         <%
+            // المتغير session متاح ضمنياً في صفحات JSP
             String adminUsername = request.getParameter("adminUsername");
             String adminPassword = request.getParameter("adminPassword");
 
-            if (request.getMethod().equalsIgnoreCase("POST")) {
+            if ("POST".equalsIgnoreCase(request.getMethod())) {
                 if (adminUsername != null && adminPassword != null && !adminUsername.isEmpty() && !adminPassword.isEmpty()) {
                     if (adminUsername.equals("admin") && adminPassword.equals("admin")) {
+                        // استخدام الجلسة الضمنية لتعيين الخاصية
+                        session.setAttribute("currentManager", "admin");
                         response.sendRedirect("Pages/add-employee.jsp");
                     } else {
         %>
@@ -57,15 +59,13 @@
                 </div>
             </div>
 
-            
-
             <button type="submit" class="btn btn-primary w-100">Se connecter <i class="fa-solid fa-arrow-right"></i></button>
 
             <div class="text-center mt-3">
                 <a href="login.jsp" class="text-muted">Espace employé</a>
             </div>    
             <div class="text-center mt-3">
-                <a href="managerLogin.jsp" class="text-muted">zone de gestion des départements</a>
+                <a href="managerLogin.jsp" class="text-muted">Zone de gestion des départements</a>
             </div>  
         </form>
     </div>

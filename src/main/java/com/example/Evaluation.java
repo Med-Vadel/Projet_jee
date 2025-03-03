@@ -8,8 +8,7 @@ public class Evaluation {
     private int communication;
     private int deadlineRespect;
     private String generalComment;
-    private String managerCode; // رمز المدير الذي أنشأ التقييم
-
+    private String managerCode;
     public Evaluation(String empCode, int techSkill, int workQuality, int teamwork,
                       int communication, int deadlineRespect, String generalComment, String managerCode) {
         this.empCode = empCode;
